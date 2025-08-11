@@ -15,7 +15,8 @@
 - Node.js
 - Express.js
 - PostgreSQL
-- Prisma ORM
+- Prisma ORM + zod-prisma-types
+- Zod
 - TypeScript
 - bcryptjs 
 - jsonwebtoken

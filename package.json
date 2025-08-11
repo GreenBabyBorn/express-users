@@ -24,6 +24,12 @@
     "jsonwebtoken": "^9.0.2",
     "prisma": "^6.13.0",
     "ts-node": "^10.9.2",
+    "zod": "^4.0.17",
+    "zod-prisma-types": "^3.2.4"
+  },
+  "devDependencies": {
+    "@types/nodemon": "^1.19.6",
+    "nodemon": "^3.1.10",
     "typescript": "^5.9.2"
   }
 }

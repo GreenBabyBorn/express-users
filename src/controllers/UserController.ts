@@ -1,17 +1,15 @@
 import { Request, Response } from 'express';
 import UserService from '../services/UserService';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { generateToken } from '../utils/jwt';
 import { Role } from '../../generated/prisma';
+import { UserCreateInputSchema} from "../../generated/zod"
+import z from 'zod';
+import { loginSchema } from '../middleware/validationMiddleware';
 
 class UserController {
   async registerUser(req: Request, res: Response) {
     try {
-      const { fullName, dateOfBirth, email, password, role } = req.body;
-
-      if (!fullName || !dateOfBirth || !email || !password) {
-        return res.status(400).json({ message: 'All fields are required for registration.' });
-      }
+      const { fullName, dateOfBirth, email, password, role } = req.body as  z.infer<typeof UserCreateInputSchema>;
 
       const user = await UserService.createUser({
         fullName,
@@ -22,8 +20,8 @@ class UserController {
       });
       const { password: _, ...userWithoutPassword } = user;
       res.status(201).json(userWithoutPassword);
-    } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
+    } catch (error: any) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
         return res.status(409).json({ message: 'User with this email already exists.' });
       }
       console.error(error);
@@ -33,7 +31,7 @@ class UserController {
 
   async loginUser(req: Request, res: Response) {
     try {
-      const { email, password } = req.body;
+      const { email, password } = req.body as z.infer<typeof loginSchema>;
 
       if (!email || !password) {
         return res.status(400).json({ message: 'Email and password are required.' });
@@ -46,7 +44,7 @@ class UserController {
       }
 
       const token = generateToken(user);
-      const { password: _, ...userWithoutPassword } = user; // Exclude password from user object
+      const { password: _, ...userWithoutPassword } = user;
       res.status(200).json({ token, user: userWithoutPassword });
     } catch (error) {
       console.error(error);
