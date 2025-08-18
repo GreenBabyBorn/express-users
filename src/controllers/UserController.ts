@@ -21,7 +21,7 @@ class UserController {
       });
       const { password: _, ...userWithoutPassword } = user;
       res.status(201).json(userWithoutPassword);
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (
         error &&
         typeof error === "object" &&
@@ -56,8 +56,12 @@ class UserController {
       const token = generateToken(user);
       const { password: _, ...userWithoutPassword } = user;
       res.status(200).json({ token, user: userWithoutPassword });
-    } catch (error) {
-      console.error(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Error logging in user:", error.message);
+      } else {
+        console.error("An unknown error occurred during login:", error);
+      }
       res.status(500).json({ message: "Error logging in user." });
     }
   }
@@ -78,8 +82,12 @@ class UserController {
       }
       const { password: _, ...userWithoutPassword } = user;
       res.status(200).json(userWithoutPassword);
-    } catch (error) {
-      console.error(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Error fetching user:", error.message);
+      } else {
+        console.error("An unknown error occurred while fetching user:", error);
+      }
       res.status(500).json({ message: "Error fetching user." });
     }
   }
@@ -114,8 +122,12 @@ class UserController {
         pageSize,
         totalPages,
       });
-    } catch (error) {
-      console.error(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Error fetching users:", error.message);
+      } else {
+        console.error("An unknown error occurred while fetching users:", error);
+      }
       res.status(500).json({ message: "Error fetching users." });
     }
   }
@@ -141,8 +153,15 @@ class UserController {
       }
       const { password: _, ...updatedUserWithoutPassword } = updatedUser;
       res.status(200).json(updatedUserWithoutPassword);
-    } catch (error) {
-      console.error(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Error updating user status:", error.message);
+      } else {
+        console.error(
+          "An unknown error occurred while updating user status:",
+          error,
+        );
+      }
       res.status(500).json({ message: "Error updating user status." });
     }
   }
