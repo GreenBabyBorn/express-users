@@ -1,28 +1,30 @@
-import prisma from '../config/prismaClient';
-import bcrypt from 'bcryptjs';
-import { Role } from '../../generated/prisma';
+import prisma from "../config/prismaClient";
+import bcrypt from "bcryptjs";
+import { Role } from "../../generated/prisma";
 
 interface CreateUserPayload {
   fullName: string;
   dateOfBirth: Date;
   email: string;
   password: string;
-  role?: Role; 
+  role?: Role;
 }
 
 class UserService {
   async createUser(data: CreateUserPayload) {
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
-   
-    const roleToAssign = data.role && Object.values(Role).includes(data.role) ? data.role : Role.USER;
+    const roleToAssign =
+      data.role && Object.values(Role).includes(data.role)
+        ? data.role
+        : Role.USER;
 
     const user = await prisma.user.create({
       data: {
         fullName: data.fullName,
         dateOfBirth: data.dateOfBirth,
         email: data.email,
-        password: hashedPassword, 
+        password: hashedPassword,
         role: roleToAssign,
         isActive: true,
       },
@@ -33,12 +35,15 @@ class UserService {
   async authenticateUser(email: string, password_candidate: string) {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user || !user.password) {
-      return null; 
+      return null;
     }
 
-    const isValidPassword = await bcrypt.compare(password_candidate, user.password);
+    const isValidPassword = await bcrypt.compare(
+      password_candidate,
+      user.password,
+    );
     if (!isValidPassword) {
-      return null; 
+      return null;
     }
     return user;
   }
@@ -47,8 +52,14 @@ class UserService {
     return prisma.user.findUnique({ where: { id } });
   }
 
-  async getAllUsers() {
-    return prisma.user.findMany();
+  async getAllUsers(page: number, pageSize: number) {
+    const skip = (page - 1) * pageSize;
+    const users = await prisma.user.findMany({
+      skip,
+      take: pageSize,
+    });
+    const totalUsers = await prisma.user.count();
+    return { users, totalUsers };
   }
 
   async updateUserStatus(id: string, isActive: boolean) {
